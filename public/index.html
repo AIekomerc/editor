@@ -1,53 +1,114 @@
 <!DOCTYPE html>
-<html lang="sr">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jednostavan Uređivač Koda</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.css">
+    <title>Editor</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="container">
-        <div class="toolbar">
-            <button onclick="runCode()">Pokreni</button>
-            <button onclick="saveFile()">Sačuvaj fajl</button>
-            <input type="text" id="filename" placeholder="Naziv fajla (npr. index.html)">
-            <select id="fileList" onchange="loadFile()">
-                <option value="">Izaberi fajl</option>
-            </select>
-        </div>
-        <div class="editor-preview">
-            <div class="editor">
-                <textarea id="code" name="code">
-<!DOCTYPE html>
-<html>
-<head>
-    <style>
-        body { background: #f0f0f0; }
-        h1 { color: blue; text-align: center; }
-    </style>
-</head>
-<body>
-    <h1>Zdravo, svete!</h1>
+    <h1>Editor</h1>
+    <select id="fileName">
+        <option value="">Izaberi fajl</option>
+    </select>
+    <button onclick="runJava()">Pokreni Java</button>
+    <button onclick="runPython()">Pokreni Python</button>
+    <textarea id="content" rows="10" cols="50"></textarea>
+    <button onclick="saveFile()">Sačuvaj fajl</button>
     <script>
-        console.log("Zdravo iz JavaScript-a!");
-    </script>
-</body>
-</html>
-                </textarea>
-            </div>
-            <div class="preview">
-                <iframe id="preview"></iframe>
-            </div>
-        </div>
-    </div>
+    async function loadFiles() {
+        const response = await fetch('/files');
+        const files = await response.json();
+        const select = document.getElementById('fileName');
+        select.innerHTML = '<option value="">Izaberi fajl</option>';
+        files.forEach(file => {
+            const option = document.createElement('option');
+            option.value = file;
+            option.text = file;
+            select.appendChild(option);
+        });
+    }
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/xml/xml.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/javascript/javascript.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/css/css.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
-    <script src="script.js"></script>
+    async function loadFileContent() {
+        const fileName = document.getElementById('fileName').value;
+        if (!fileName) return;
+        const response = await fetch(`/file/${fileName}`);
+        const result = await response.json();
+        if (result.content) {
+            document.getElementById('content').value = result.content;
+        } else {
+            alert('Greška: ' + result.error);
+        }
+    }
+
+    async function saveFile() {
+        const fileName = document.getElementById('fileName').value;
+        const content = document.getElementById('content').value;
+        if (!fileName || !content) {
+            alert('Izaberi fajl i unesi sadržaj!');
+            return;
+        }
+        try {
+            const response = await fetch('/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: fileName, content })
+            });
+            const result = await response.json();
+            alert(result.message || 'Greška: ' + result.error);
+        } catch (error) {
+            alert('Greška: ' + error.message);
+        }
+    }
+
+    async function runJava() {
+        const fileName = document.getElementById('fileName').value;
+        if (!fileName.endsWith('.java')) {
+            alert('Izaberi .java fajl!');
+            return;
+        }
+        try {
+            const response = await fetch('/run-java', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: fileName })
+            });
+            const result = await response.json();
+            if (result.error) {
+                alert('Greška: ' + result.error);
+            } else {
+                alert('Izlaz: ' + result.output);
+            }
+        } catch (error) {
+            alert('Greška: ' + error.message);
+        }
+    }
+
+    async function runPython() {
+        const fileName = document.getElementById('fileName').value;
+        if (!fileName.endsWith('.py')) {
+            alert('Izaberi .py fajl!');
+            return;
+        }
+        try {
+            const response = await fetch('/run-python', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ filename: fileName })
+            });
+            const result = await response.json();
+            if (result.error) {
+                alert('Greška: ' + result.error);
+            } else {
+                alert('Izlaz: ' + result.output);
+            }
+        } catch (error) {
+            alert('Greška: ' + error.message);
+        }
+    }
+
+    window.onload = loadFiles;
+    document.getElementById('fileName').onchange = loadFileContent;
+    </script>
 </body>
 </html>
