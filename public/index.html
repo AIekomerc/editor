@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jednostavan Uređivač Koda</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <div class="toolbar">
+            <button onclick="runCode()">Pokreni</button>
+            <button onclick="saveFile()">Sačuvaj fajl</button>
+            <input type="text" id="filename" placeholder="Naziv fajla (npr. index.html)">
+            <select id="fileList" onchange="loadFile()">
+                <option value="">Izaberi fajl</option>
+            </select>
+        </div>
+        <div class="editor-preview">
+            <div class="editor">
+                <textarea id="code" name="code">
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background: #f0f0f0; }
+        h1 { color: blue; text-align: center; }
+    </style>
+</head>
+<body>
+    <h1>Zdravo, svete!</h1>
+    <script>
+        console.log("Zdravo iz JavaScript-a!");
+    </script>
+</body>
+</html>
+                </textarea>
+            </div>
+            <div class="preview">
+                <iframe id="preview"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/xml/xml.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/javascript/javascript.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/css/css.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.7/mode/htmlmixed/htmlmixed.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

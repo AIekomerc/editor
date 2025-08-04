@@ -1,0 +1,12 @@
+{
+    "name": "code-editor",
+    "version": "1.0.0",
+    "description": "Jednostavan uređivač koda sa čuvanjem fajlova",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.18.2"
+    }
+}
