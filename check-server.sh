@@ -107,17 +107,21 @@ open_new_terminal() {
     echo "Pokušavam da otvorim novi terminal..."
     if command -v termux-toast >/dev/null 2>&1; then
         termux-toast "Otvaram novi terminal..."
-        am start -n com.termux/.HomeActivity 2>/dev/null
+        am start -n com.termux/.app.TermuxActivity 2>/dev/null
         if [ $? -eq 0 ]; then
             echo "Novi terminal je pokrenut."
         else
-            echo "Greška: Nije moguće otvoriti novi terminal. Proveri Termux dozvole."
-            echo "Alternativa: Ručno otvori Termux aplikaciju."
+            echo "Upozorenje: Nije moguće otvoriti novi terminal jer je Termux već aktivan ili nema odgovarajućih dozvola."
+            echo "Alternativa 1: Ručno otvori Termux aplikaciju dodirom na ikonicu."
+            echo "Alternativa 2: Pokreni novu bash sesiju unutar trenutnog terminala sa: bash"
+            echo "Proveri Termux dozvole u Podešavanjima (npr. prikaz preko drugih aplikacija)."
         fi
     else
-        echo "Termux:API nije instaliran. Instaliraj ga za otvaranje novog terminala."
+        echo "Termux:API nije instaliran ili nije potpuno podešen."
         echo "Pokreni: pkg install termux-api"
-        echo "Alternativa: Ručno otvori Termux aplikaciju."
+        echo "Takođe instaliraj Termux:API aplikaciju iz Google Play Store-a."
+        echo "Alternativa 1: Ručno otvori Termux aplikaciju dodirom na ikonicu."
+        echo "Alternativa 2: Pokreni novu bash sesiju unutar trenutnog terminala sa: bash"
     fi
 }
 
