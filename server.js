@@ -14,7 +14,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.get('/files', async (req, res) => {
     try {
         const files = await fs.readdir(filesDir);
-        res.json(files);
+        const filteredFiles = files.filter(file => !file.endsWith('.class'));
+        res.json(filteredFiles);
     } catch (err) {
         res.status(500).json({ error: 'Greška pri čitanju fajlova' });
     }
@@ -50,16 +51,16 @@ app.post('/run-java', async (req, res) => {
     }
     const filePath = path.join(filesDir, filename);
     try {
-        await fs.access(filePath);
+        await fs.access(filePath, fs.constants.R_OK);
         const className = filename.replace('.java', '');
         exec(`javac ${filePath} && java -cp ${filesDir} ${className}`, (err, stdout, stderr) => {
             if (err || stderr) {
-                return res.status(500).json({ error: stderr || err.message });
+                return res.status(500).json({ error: stderr || err.message, details: err });
             }
             res.json({ output: stdout });
         });
     } catch (err) {
-        res.status(500).json({ error: 'Greška pri pokretanju Java fajla' });
+        res.status(500).json({ error: 'Greška pri pokretanju Java fajla', details: err.message });
     }
 });
 
@@ -70,15 +71,15 @@ app.post('/run-python', async (req, res) => {
     }
     const filePath = path.join(filesDir, filename);
     try {
-        await fs.access(filePath);
+        await fs.access(filePath, fs.constants.R_OK);
         exec(`python ${filePath}`, (err, stdout, stderr) => {
             if (err || stderr) {
-                return res.status(500).json({ error: stderr || err.message });
+                return res.status(500).json({ error: stderr || err.message, details: err });
             }
             res.json({ output: stdout });
         });
     } catch (err) {
-        res.status(500).json({ error: 'Greška pri pokretanju Python fajla' });
+        res.status(500).json({ error: 'Greška pri pokretanju Python fajla', details: err.message });
     }
 });
 
