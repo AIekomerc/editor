@@ -12,11 +12,14 @@ check_server() {
     if [ -n "$NODE_PID" ]; then
         echo "Server je pokrenut (PID: $NODE_PID)"
         # Proveri vreme pokretanja
-        START_TIME=$(awk '{print $22}' /proc/"$NODE_PID"/stat)
-        BOOT_TIME=$(cat /proc/stat | grep btime | awk '{print $2}')
-        START_SECONDS=$((BOOT_TIME + START_TIME / 100))
-        START_DATE=$(date -d @$START_SECONDS 2>/dev/null || echo "Nije moguće izračunati vreme")
-        echo "Server pokrenut u: $START_DATE"
+        START_TIME=$(ps -p "$NODE_PID" -o lstart | grep -v START)
+        if [ -n "$START_TIME" ]; then
+            echo "Server pokrenut u: $START_TIME"
+        else
+            echo "Nije moguće dobiti vreme pokretanja. Koristim tekuće vreme."
+            START_TIME=$(date)
+            echo "Server pokrenut u (približno): $START_TIME"
+        fi
         # Proveri da li server odgovara
         if curl -s http://localhost:3000/files >/dev/null 2>&1; then
             echo "Server odgovara na http://localhost:3000"
@@ -28,10 +31,12 @@ check_server() {
             sleep 2
             if curl -s http://localhost:3000/files >/dev/null 2>&1; then
                 echo "Server uspešno pokrenut (PID: $NEW_PID)"
-                START_TIME=$(awk '{print $22}' /proc/"$NEW_PID"/stat)
-                START_SECONDS=$((BOOT_TIME + START_TIME / 100))
-                START_DATE=$(date -d @$START_SECONDS 2>/dev/null || echo "Nije moguće izračunati vreme")
-                echo "Server pokrenut u: $START_DATE"
+                START_TIME=$(ps -p "$NEW_PID" -o lstart | grep -v START)
+                if [ -n "$START_TIME" ]; then
+                    echo "Server pokrenut u: $START_TIME"
+                else
+                    echo "Server pokrenut u (približno): $(date)"
+                fi
             else
                 echo "Greška: Server nije pokrenut. Proveri server.js."
                 cat server.js | grep -E "express|fs|exec"
@@ -46,11 +51,12 @@ check_server() {
         sleep 2
         if curl -s http://localhost:3000/files >/dev/null 2>&1; then
             echo "Server uspešno pokrenut (PID: $NEW_PID)"
-            START_TIME=$(awk '{print $22}' /proc/"$NEW_PID"/stat)
-            BOOT_TIME=$(cat /proc/stat | grep btime | awk '{print $2}')
-            START_SECONDS=$((BOOT_TIME + START_TIME / 100))
-            START_DATE=$(date -d @$START_SECONDS 2>/dev/null || echo "Nije moguće izračunati vreme")
-            echo "Server pokrenut u: $START_DATE"
+            START_TIME=$(ps -p "$NEW_PID" -o lstart | grep -v START)
+            if [ -n "$START_TIME" ]; then
+                echo "Server pokrenut u: $START_TIME"
+            else
+                echo "Server pokrenut u (približno): $(date)"
+            fi
         else
             echo "Greška: Server nije pokrenut. Proveri server.js."
             cat server.js | grep -E "express|fs|exec"
@@ -107,11 +113,19 @@ update_git() {
 # Funkcija za otvaranje novog terminala
 open_new_terminal() {
     echo "Pokušavam da otvorim novi terminal..."
-    am start -n com.termux/.HomeActivity 2>/dev/null
-    if [ $? -eq 0 ]; then
-        echo "Novi terminal je pokrenut."
+    # Proveri da li je Termux:API instaliran
+    if command -v termux-toast >/dev/null 2>&1; then
+        termux-toast "Otvaram novi terminal..."
+        am start -n com.termux/.HomeActivity 2>/dev/null
+        if [ $? -eq 0 ]; then
+            echo "Novi terminal je pokrenut."
+        else
+            echo "Greška: Nije moguće otvoriti novi terminal. Proveri Termux dozvole."
+        fi
     else
-        echo "Greška: Nije moguće otvoriti novi terminal."
+        echo "Termux:API nije instaliran. Instaliraj ga za otvaranje novog terminala."
+        echo "Pokreni: pkg install termux-api"
+        echo "Alternativa: Ručno otvori Termux aplikaciju."
     fi
 }
 
