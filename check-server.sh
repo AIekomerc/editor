@@ -107,11 +107,13 @@ open_new_terminal() {
     echo "Pokušavam da otvorim novi terminal..."
     if command -v termux-toast >/dev/null 2>&1; then
         termux-toast "Otvaram novi terminal..."
-        am start -n com.termux/.app.TermuxActivity 2>/dev/null
-        if [ $? -eq 0 ]; then
+        # Pokreni am start i proveri izlaz
+        AM_OUTPUT=$(am start -n com.termux/.app.TermuxActivity 2>&1)
+        if [ $? -eq 0 ] && ! echo "$AM_OUTPUT" | grep -q "Warning: Activity not started"; then
             echo "Novi terminal je pokrenut."
         else
             echo "Upozorenje: Nije moguće otvoriti novi terminal jer je Termux već aktivan ili nema odgovarajućih dozvola."
+            echo "Detalji: $AM_OUTPUT"
             echo "Alternativa 1: Ručno otvori Termux aplikaciju dodirom na ikonicu."
             echo "Alternativa 2: Pokreni novu bash sesiju unutar trenutnog terminala sa: bash"
             echo "Proveri Termux dozvole u Podešavanjima (npr. prikaz preko drugih aplikacija)."
